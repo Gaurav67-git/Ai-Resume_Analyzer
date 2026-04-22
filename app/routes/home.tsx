@@ -1,50 +1,120 @@
 import type { Route } from "./+types/home";
 import Navbar from "~/components/Navbar";
-import { resumes } from "../../constants";
 import ResumeCard from "~/components/ResumeCard";
-import {usePuterStore} from "~/lib/puter";
-import { useNavigate} from "react-router";
-import {useEffect} from "react";
-
+import { usePuterStore } from "~/lib/puter";
+import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import {Link} from "react-router";
 
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Resumind" },
-    { name: "description", content: "Smart feedback for your dream job!" },
-  ];
+    return [
+        { title: "Resumind" },
+        { name: "description", content: "Smart feedback for your dream job!" },
+    ];
 }
 
+type Resume = {
+    id: string;
+    companyName?: string;
+    jobTitle?: string;
+    imagePath: string;
+    feedback: {
+        overallScore: number;
+    };
+};
+
 export default function Home() {
-    const { auth } = usePuterStore();
+    const { auth, kv } = usePuterStore();
     const navigate = useNavigate();
 
+    const [resumes, setResumes] = useState<Resume[]>([]);
+    const [loadingResumes, setLoadingResumes] = useState(false);
+
+    // 🔐 Auth check
     useEffect(() => {
-        if(!auth.isAuthenticated) navigate('/auth?next=/');
+        if (!auth.isAuthenticated) {
+            navigate("/auth?next=/");
+        }
     }, [auth.isAuthenticated]);
-  return (
-      <main className="min-h-screen bg-[url('/images/bg-main.svg')] bg-cover">
-        <Navbar />
 
-        <section className="w-full px-6 py-16">
-          {/* Heading */}
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl font-bold">
-              Track Your Applications & Resume Ratings
-            </h1>
-            <h2 className="text-gray-500 mt-2">
-              Review your submissions and check AI-powered feedback.
-            </h2>
-          </div>
+    // 📦 Load resumes from KV
+    useEffect(() => {
+        const loadResumes = async () => {
+            setLoadingResumes(true);
 
-          {/* Cards */}
-          {resumes.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10 max-w-7xl mx-auto">
-                {resumes.map((resume) => (
-                    <ResumeCard key={resume.id} resume={resume} />
-                ))}
-              </div>
-          )}
-        </section>
-      </main>
-  );
+            try {
+                const kvItems = (await kv.list("resume:*", true)) as any[];
+
+                const parsedResumes = kvItems?.map((item) =>
+                    JSON.parse(item.value)
+                );
+
+                setResumes(parsedResumes || []);
+            } catch (error) {
+                console.error("Error loading resumes:", error);
+            }
+
+            setLoadingResumes(false);
+        };
+
+        loadResumes();
+    }, []);
+
+    return (
+        <main className="bg-[url('/images/bg-main.svg')] bg-cover min-h-screen">
+            <Navbar />
+
+            <section className="main-section px-6 py-16">
+                {/* Heading */}
+                <div className="page-heading py-16 text-center">
+                    <h1 className="text-3xl sm:text-4xl font-bold">
+                        Track Your Applications & Resume Ratings
+                    </h1>
+
+                    {/* Dynamic subheading */}
+                    {loadingResumes ? (
+                        <h2 className="text-gray-500 mt-2">
+                            Loading your resumes...
+                        </h2>
+                    ) : resumes.length === 0 ? (
+                        <h2 className="text-gray-500 mt-2">
+                            No resumes found. Upload your first resume to get feedback.
+                        </h2>
+                    ) : (
+                        <h2 className="text-gray-500 mt-2">
+                            Review your submissions and check AI-powered feedback.
+                        </h2>
+                    )}
+                </div>
+
+                {/* 🔄 Loading animation */}
+                {loadingResumes && (
+                    <div className="flex flex-col items-center justify-center">
+                        <img
+                            src="/images/resume-scan-2.gif"
+                            className="w-[200px]"
+                            alt="loading"
+                        />
+                    </div>
+                )}
+
+                {/* 📂 Resume list */}
+                {!loadingResumes && resumes.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                        {resumes.map((resume) => (
+                            <ResumeCard key={resume.id} resume={resume} />
+                        ))}
+                    </div>
+                )}
+
+                {!loadingResumes && resumes?.length === 0 && (
+                    <div className= "flex flex-col items-center justify-center mt-10 gap-4">
+                        <Link to = "/upload" className = "primary-button w-fit text-xl font-semibold">
+Upload Resume
+                        </Link>
+                    </div>
+                )}
+            </section>
+        </main>
+    );
 }
