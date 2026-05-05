@@ -73,6 +73,15 @@ interface JobRecommendationResult {
 interface OptimizedResume {
     generatedAt: string;
     targetRole: string;
+    candidateName: string;
+    contact: {
+        email?: string;
+        phone?: string;
+        location?: string;
+        linkedin?: string;
+        portfolio?: string;
+        github?: string;
+    };
     headline: string;
     summary: string;
     skills: string[];

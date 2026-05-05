@@ -8,12 +8,19 @@ type Resume = {
     companyName?: string;
     jobTitle?: string;
     imagePath: string;
+    resumePath?: string;
     feedback: {
         overallScore: number;
     };
 };
 
-const ResumeCard = ({ resume }: { resume: Resume }) => {
+const ResumeCard = ({
+    resume,
+    onDelete,
+}: {
+    resume: Resume;
+    onDelete?: (resume: Resume) => void;
+}) => {
     const { fs } = usePuterStore();
     const [imageUrl, setImageUrl] = useState<string>("");
 
@@ -44,42 +51,58 @@ const ResumeCard = ({ resume }: { resume: Resume }) => {
     }, [resume.imagePath]);
 
     return (
-        <Link
-            to={`/resume/${resume.id}`}
-            className="bg-white rounded-2xl shadow-md p-4 hover:shadow-xl transition-all duration-300 flex flex-col gap-4 min-h-[550px]"
-        >
+        <article className="bg-white rounded-2xl shadow-md p-4 hover:shadow-xl transition-all duration-300 flex flex-col gap-4 min-h-[550px]">
             {/* Header */}
-            <div className="flex justify-between items-start">
-                <div>
-                    {companyName && (
-                        <h2 className="text-black font-bold text-lg break-words">
-                            {companyName}
-                        </h2>
-                    )}
+            <Link to={`/resume/${resume.id}`} className="flex justify-between items-start">
+                    <div>
+                        {companyName && (
+                            <h2 className="text-black font-bold text-lg break-words">
+                                {companyName}
+                            </h2>
+                        )}
 
-                    {jobTitle && (
-                        <h3 className="text-sm text-gray-500 break-words">
-                            {jobTitle}
-                        </h3>
-                    )}
+                        {jobTitle && companyName && (
+                            <h3 className="text-sm text-gray-500 break-words">
+                                {jobTitle}
+                            </h3>
+                        )}
 
-                    {!companyName && !jobTitle && (
-                        <h2 className="text-black font-bold">Resume</h2>
-                    )}
-                </div>
+                        {jobTitle && !companyName && (
+                            <h2 className="text-black font-bold text-lg break-words">
+                                {jobTitle}
+                            </h2>
+                        )}
 
-                <ScoreCircle score={resume.feedback?.overallScore || 0} />
-            </div>
+                        {!companyName && !jobTitle && (
+                            <h2 className="text-black font-bold">Resume</h2>
+                        )}
+                    </div>
+
+                    <ScoreCircle score={resume.feedback?.overallScore || 0} />
+            </Link>
 
             {/* Image */}
-            <div className="rounded-lg overflow-hidden">
-                <img
-                    src={imageUrl || "/images/placeholder.png"}
-                    alt="resume preview"
-                    className="w-full h-[420px] sm:h-[450px] object-cover object-top"
-                />
+            <div className="relative rounded-lg overflow-hidden">
+                <Link to={`/resume/${resume.id}`}>
+                    <img
+                        src={imageUrl || "/images/placeholder.png"}
+                        alt="resume preview"
+                        className="w-full h-[420px] sm:h-[450px] object-cover object-top"
+                    />
+                </Link>
+                {onDelete && (
+                    <button
+                        type="button"
+                        className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-md border border-gray-200 hover:bg-badge-red"
+                        onClick={() => onDelete(resume)}
+                        aria-label="Remove resume"
+                        title="Remove resume"
+                    >
+                        <img src="/icons/cross.svg" alt="" className="h-4 w-4" />
+                    </button>
+                )}
             </div>
-        </Link>
+        </article>
     );
 };
 

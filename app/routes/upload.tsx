@@ -32,9 +32,9 @@ const Upload = () => {
                                      jobDescription,
                                      file,
                                  }: {
-        companyName: string;
+        companyName?: string;
         jobTitle: string;
-        jobDescription: string;
+        jobDescription?: string;
         file: File;
     }) => {
         try {
@@ -131,11 +131,21 @@ const Upload = () => {
 
         const formData = new FormData(e.currentTarget);
 
-        const companyName = formData.get("company-name") as string;
-        const jobTitle = formData.get("job-title") as string;
-        const jobDescription = formData.get("job-description") as string;
+        const companyName = ((formData.get("company-name") as string) || "").trim();
+        const jobTitle = ((formData.get("job-title") as string) || "").trim();
+        const jobDescription = ((formData.get("job-description") as string) || "").trim();
 
-        handleAnalyze({ companyName, jobTitle, jobDescription, file });
+        if (!jobTitle) {
+            setStatusText("Please enter a job title");
+            return;
+        }
+
+        handleAnalyze({
+            companyName: companyName || undefined,
+            jobTitle,
+            jobDescription: jobDescription || undefined,
+            file,
+        });
     };
 
     return (
@@ -166,8 +176,12 @@ const Upload = () => {
                                 onSubmit={handleSubmit}
                                 className="flex flex-col gap-4 mt-8"
                             >
+                                {statusText && (
+                                    <p className="text-red-600 font-semibold">{statusText}</p>
+                                )}
+
                                 <div className="form-div">
-                                    <label htmlFor="company-name">Company Name</label>
+                                    <label htmlFor="company-name">Company Name <span className="text-gray-400">(optional)</span></label>
                                     <input
                                         type="text"
                                         name="company-name"
@@ -183,15 +197,16 @@ const Upload = () => {
                                         name="job-title"
                                         placeholder="Job Title"
                                         id="job-title"
+                                        required
                                     />
                                 </div>
 
                                 <div className="form-div">
-                                    <label htmlFor="job-description">Job Description</label>
+                                    <label htmlFor="job-description">Job Description <span className="text-gray-400">(optional)</span></label>
                                     <textarea
                                         rows={5}
                                         name="job-description"
-                                        placeholder="Job Description"
+                                        placeholder="Paste job description if you have it"
                                         id="job-description"
                                     />
                                 </div>

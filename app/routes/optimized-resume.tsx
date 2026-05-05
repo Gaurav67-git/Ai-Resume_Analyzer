@@ -19,7 +19,15 @@ const parseOptimizedResume = (content: string | any[]) => {
         .replace(/\s*```$/i, "")
         .trim();
 
-    return JSON.parse(cleaned) as OptimizedResume;
+    return normalizeOptimizedResume(JSON.parse(cleaned) as OptimizedResume);
+};
+
+const normalizeOptimizedResume = (resume: OptimizedResume) => {
+    return {
+        ...resume,
+        candidateName: resume.candidateName || "Candidate Name",
+        contact: resume.contact || {},
+    };
 };
 
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -28,6 +36,8 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
         <div className="mt-4">{children}</div>
     </section>
 );
+
+const optimizedResumeCacheKey = (id: string) => `updated-resume-v2:${id}`;
 
 const OptimizedResumePage = () => {
     const { id } = useParams();
@@ -70,9 +80,9 @@ const OptimizedResumePage = () => {
             setIsEligible(true);
 
             if (!forceRefresh) {
-                const cached = await kv.get(`optimized-resume:${id}`);
+                const cached = await kv.get(optimizedResumeCacheKey(id));
                 if (cached) {
-                    setOptimizedResume(JSON.parse(cached));
+                    setOptimizedResume(normalizeOptimizedResume(JSON.parse(cached)));
                     setIsGenerating(false);
                     return;
                 }
@@ -108,7 +118,7 @@ const OptimizedResumePage = () => {
             }
 
             const parsed = parseOptimizedResume(response.message.content);
-            await kv.set(`optimized-resume:${id}`, JSON.stringify(parsed));
+            await kv.set(optimizedResumeCacheKey(id), JSON.stringify(parsed));
             setOptimizedResume(parsed);
         } catch (err) {
             console.error(err);
@@ -145,9 +155,9 @@ const OptimizedResumePage = () => {
                                 type="button"
                                 className="primary-button w-fit"
                                 onClick={handleDownloadPdf}
-                            >
-                                Download PDF
-                            </button>
+                        >
+                            Download Updated Resume PDF
+                        </button>
                         )}
                         <button
                             type="button"
@@ -155,19 +165,19 @@ const OptimizedResumePage = () => {
                             onClick={() => generateOptimizedResume(true)}
                             disabled={isGenerating}
                         >
-                            Regenerate Draft
+                            Regenerate Updated Resume
                         </button>
                     </div>
                 </nav>
 
                 <div className="no-print page-heading !items-start !text-left">
-                    <h1 className="text-4xl sm:text-5xl">AI Optimized Resume</h1>
+                    <h1 className="text-4xl sm:text-5xl">Updated Resume</h1>
                     <h2 className="text-xl">
-                        A new resume draft fully aligned with the target job role and ATS feedback.
+                        A new resume generated from your uploaded PDF and fully aligned with the job description.
                     </h2>
                     {score !== null && score < 70 && (
                         <p className="rounded-full bg-badge-yellow px-4 py-2 text-badge-yellow-text font-semibold">
-                            Resume score is weak, so this draft focuses on role alignment and missing ATS keywords.
+                            Resume score is weak, so this new version updates your uploaded resume for stronger job alignment.
                         </p>
                     )}
                 </div>
@@ -184,7 +194,7 @@ const OptimizedResumePage = () => {
                 {isGenerating && (
                     <div className="flex flex-col items-center justify-center bg-white rounded-2xl p-8">
                         <img src="/images/resume-scan-2.gif" className="w-[220px]" alt="Generating" />
-                        <p className="text-gray-600 font-semibold">Building a stronger resume draft...</p>
+                        <p className="text-gray-600 font-semibold">Updating your uploaded resume...</p>
                     </div>
                 )}
 
@@ -198,8 +208,17 @@ const OptimizedResumePage = () => {
                     <div className="flex flex-col gap-6">
                         <div className="printable-resume flex flex-col gap-6">
                         <Section title="Header">
-                            <div className="flex flex-col gap-2">
-                                <p className="text-2xl font-bold text-gray-900">{optimizedResume.headline}</p>
+                            <div className="flex flex-col gap-2 text-center">
+                                <p className="text-3xl font-bold text-gray-900">{optimizedResume.candidateName}</p>
+                                <p className="text-xl font-semibold text-gray-800">{optimizedResume.headline}</p>
+                                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-gray-600">
+                                    {optimizedResume.contact.email && <span>{optimizedResume.contact.email}</span>}
+                                    {optimizedResume.contact.phone && <span>{optimizedResume.contact.phone}</span>}
+                                    {optimizedResume.contact.location && <span>{optimizedResume.contact.location}</span>}
+                                    {optimizedResume.contact.linkedin && <span>{optimizedResume.contact.linkedin}</span>}
+                                    {optimizedResume.contact.portfolio && <span>{optimizedResume.contact.portfolio}</span>}
+                                    {optimizedResume.contact.github && <span>{optimizedResume.contact.github}</span>}
+                                </div>
                                 <p className="text-gray-600">Target role: {optimizedResume.targetRole}</p>
                             </div>
                         </Section>

@@ -18,13 +18,14 @@ type Resume = {
     companyName?: string;
     jobTitle?: string;
     imagePath: string;
+    resumePath?: string;
     feedback: {
         overallScore: number;
     };
 };
 
 export default function Home() {
-    const { auth, isLoading, kv } = usePuterStore();
+    const { auth, isLoading, fs, kv } = usePuterStore();
     const navigate = useNavigate();
 
     const [resumes, setResumes] = useState<Resume[]>([]);
@@ -59,6 +60,30 @@ export default function Home() {
 
         loadResumes();
     }, []);
+
+    const handleDeleteResume = async (resume: Resume) => {
+        const shouldDelete = window.confirm("Remove this resume?");
+        if (!shouldDelete) return;
+
+        setResumes((current) => current.filter((item) => item.id !== resume.id));
+
+        try {
+            if (resume.resumePath) {
+                await fs.delete(resume.resumePath);
+            }
+
+            if (resume.imagePath) {
+                await fs.delete(resume.imagePath);
+            }
+
+            await kv.delete(`resume:${resume.id}`);
+            await kv.delete(`jobs:${resume.id}`);
+            await kv.delete(`optimized-resume:${resume.id}`);
+            await kv.delete(`updated-resume-v2:${resume.id}`);
+        } catch (error) {
+            console.error("Error deleting resume:", error);
+        }
+    };
 
     return (
         <main className="bg-[url('/images/bg-main.svg')] bg-cover min-h-screen">
@@ -102,7 +127,11 @@ export default function Home() {
                 {!loadingResumes && resumes.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                         {resumes.map((resume) => (
-                            <ResumeCard key={resume.id} resume={resume} />
+                            <ResumeCard
+                                key={resume.id}
+                                resume={resume}
+                                onDelete={handleDeleteResume}
+                            />
                         ))}
                     </div>
                 )}

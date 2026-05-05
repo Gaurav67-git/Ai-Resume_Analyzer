@@ -232,7 +232,7 @@ export const prepareInstructions = ({
 
                                     }: {
     jobTitle: string;
-    jobDescription: string;
+    jobDescription?: string;
 
 }) =>
     `You are an expert in ATS (Applicant Tracking System) and resume analysis.
@@ -243,7 +243,7 @@ export const prepareInstructions = ({
   If available, use the job description for the job user is applying to to give more detailed feedback.
   If provided, take the job description into consideration.
   The job title is: ${jobTitle}
-  The job description is: ${jobDescription}
+  The job description is: ${jobDescription || "Not provided"}
   Provide the feedback using the following format: ${AIResponseFormat}
   Return the analysis as a JSON object, without any other text and without the backticks.
   Do not include any other text or comments.`;
@@ -297,6 +297,15 @@ export const optimizedResumeResponseFormat = `
 interface OptimizedResume {
   generatedAt: string;
   targetRole: string;
+  candidateName: string;
+  contact: {
+    email?: string;
+    phone?: string;
+    location?: string;
+    linkedin?: string;
+    portfolio?: string;
+    github?: string;
+  };
   headline: string;
   summary: string;
   skills: string[];
@@ -327,15 +336,18 @@ export const prepareOptimizedResumeInstructions = ({
     feedback: Feedback;
 }) =>
     `You are an expert resume writer and ATS optimization specialist.
-Rewrite the attached resume into a stronger resume draft aligned to the target job role.
+Use the attached uploaded resume as the source of truth and create a new updated resume that is fully aligned to the target job role and job description.
 
 Important rules:
+- Preserve the candidate's real existing information from the uploaded resume, including name, contact details, education, employers, projects, certifications, dates, and tools when present.
+- Rewrite and reorganize the existing resume content so it fits the target job description better.
 - Do not invent employers, degrees, certifications, job dates, metrics, or tools that are not supported by the original resume.
 - You may improve wording, structure, ordering, clarity, and ATS keyword coverage.
 - If a metric is missing, do not fabricate a number. Write impact-focused bullets without fake numbers.
 - Make the resume concise, professional, and tailored to the target role.
 - Prioritize fixing weaknesses from the resume analysis.
-- If the current resume is weak, make the new draft substantially stronger and more targeted.
+- If the current resume is weak, make the new draft substantially stronger and more targeted while still using only the candidate's existing resume facts.
+- The final output should read like a complete new resume generated from the candidate's originally uploaded resume and suitable to download as a PDF.
 
 Target job title: ${jobTitle || "Not provided"}
 Target job description: ${jobDescription || "Not provided"}

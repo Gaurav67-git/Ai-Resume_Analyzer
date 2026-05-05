@@ -86,11 +86,11 @@ loadResume();
                        <div>
                            <h2 className="!text-2xl !text-black font-bold">Resume needs improvement</h2>
                            <p className="text-gray-600 mt-2">
-                               AI can create a stronger draft aligned with this job role and the missing ATS keywords.
+                               AI can update your uploaded resume and create a new PDF fully aligned with this job description.
                            </p>
                        </div>
                        <Link to={`/optimized-resume/${id}`} className="primary-button w-fit">
-                           Make New Job-Aligned Resume
+                           Update Uploaded Resume
                        </Link>
                    </div>
                )}
