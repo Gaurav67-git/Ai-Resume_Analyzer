@@ -59,6 +59,9 @@ form {
   .primary-button {
     @apply primary-gradient text-white rounded-full px-4 py-2 cursor-pointer w-full;
   }
+  .secondary-button {
+    @apply border border-gray-200 bg-white text-gray-800 rounded-full px-4 py-2 cursor-pointer shadow-sm;
+  }
   .resume-nav {
     @apply flex flex-row justify-between items-center p-4 border-b border-gray-200;
   }
@@ -148,5 +151,59 @@ form {
   }
   to {
     opacity: 1;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-resume,
+  .printable-resume * {
+    visibility: visible;
+  }
+
+  .printable-resume {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    color: #111827;
+    background: white;
+    gap: 14px !important;
+  }
+
+  .printable-resume section {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 0 12px 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .printable-resume h2 {
+    color: #111827 !important;
+    font-size: 18px !important;
+    border-bottom: 1px solid #d1d5db;
+    padding-bottom: 4px;
+  }
+
+  .printable-resume p,
+  .printable-resume li,
+  .printable-resume span {
+    color: #111827 !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 }

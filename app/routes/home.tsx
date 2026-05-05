@@ -24,7 +24,7 @@ type Resume = {
 };
 
 export default function Home() {
-    const { auth, kv } = usePuterStore();
+    const { auth, isLoading, kv } = usePuterStore();
     const navigate = useNavigate();
 
     const [resumes, setResumes] = useState<Resume[]>([]);
@@ -32,10 +32,10 @@ export default function Home() {
 
     // 🔐 Auth check
     useEffect(() => {
-        if (!auth.isAuthenticated) {
+        if (!isLoading && !auth.isAuthenticated) {
             navigate("/auth?next=/");
         }
-    }, [auth.isAuthenticated]);
+    }, [auth.isAuthenticated, isLoading, navigate]);
 
     // 📦 Load resumes from KV
     useEffect(() => {

@@ -247,3 +247,99 @@ export const prepareInstructions = ({
   Provide the feedback using the following format: ${AIResponseFormat}
   Return the analysis as a JSON object, without any other text and without the backticks.
   Do not include any other text or comments.`;
+
+export const jobRecommendationResponseFormat = `
+interface JobRecommendationResult {
+  generatedAt: string;
+  resumeSummary: string;
+  targetRoles: {
+    title: string;
+    matchScore: number;
+    seniority: string;
+    locationType: "Remote" | "Hybrid" | "On-site" | "Any";
+    whyGoodFit: string;
+    skillsToHighlight: string[];
+    skillsToImprove: string[];
+    searchKeywords: string[];
+    searchUrl: string;
+  }[];
+  nextSteps: string[];
+}`;
+
+export const prepareJobRecommendationInstructions = ({
+                                                       jobTitle,
+                                                       jobDescription,
+                                                       feedback,
+                                                   }: {
+    jobTitle?: string;
+    jobDescription?: string;
+    feedback: Feedback;
+}) =>
+    `You are an expert career advisor and technical recruiter.
+Recommend current, realistic job roles for this candidate based on the attached resume and resume analysis.
+Use today's job-market context, but do not invent specific job postings, employers, salaries, or application deadlines.
+Return 5 role recommendations that the candidate can search for now.
+
+Original target job title: ${jobTitle || "Not provided"}
+Original job description: ${jobDescription || "Not provided"}
+Resume analysis JSON: ${JSON.stringify(feedback)}
+
+For each recommendation:
+- Choose a practical role title.
+- Estimate a match score from 0 to 100.
+- Include seniority, preferred location type, why it fits, skills to highlight, skills to improve, search keywords, and a searchUrl.
+- searchUrl must be a real LinkedIn Jobs search URL using the role keywords.
+
+Provide the response using this format: ${jobRecommendationResponseFormat}
+Return only valid JSON. Do not include markdown, backticks, comments, or any extra text.`;
+
+export const optimizedResumeResponseFormat = `
+interface OptimizedResume {
+  generatedAt: string;
+  targetRole: string;
+  headline: string;
+  summary: string;
+  skills: string[];
+  experience: {
+    title: string;
+    company: string;
+    location?: string;
+    dates?: string;
+    bullets: string[];
+  }[];
+  projects: {
+    name: string;
+    bullets: string[];
+  }[];
+  education: string[];
+  certifications: string[];
+  keywordsAdded: string[];
+  improvementNotes: string[];
+}`;
+
+export const prepareOptimizedResumeInstructions = ({
+                                                       jobTitle,
+                                                       jobDescription,
+                                                       feedback,
+                                                   }: {
+    jobTitle?: string;
+    jobDescription?: string;
+    feedback: Feedback;
+}) =>
+    `You are an expert resume writer and ATS optimization specialist.
+Rewrite the attached resume into a stronger resume draft aligned to the target job role.
+
+Important rules:
+- Do not invent employers, degrees, certifications, job dates, metrics, or tools that are not supported by the original resume.
+- You may improve wording, structure, ordering, clarity, and ATS keyword coverage.
+- If a metric is missing, do not fabricate a number. Write impact-focused bullets without fake numbers.
+- Make the resume concise, professional, and tailored to the target role.
+- Prioritize fixing weaknesses from the resume analysis.
+- If the current resume is weak, make the new draft substantially stronger and more targeted.
+
+Target job title: ${jobTitle || "Not provided"}
+Target job description: ${jobDescription || "Not provided"}
+Resume analysis JSON: ${JSON.stringify(feedback)}
+
+Provide the optimized resume using this format: ${optimizedResumeResponseFormat}
+Return only valid JSON. Do not include markdown, backticks, comments, or any extra text.`;

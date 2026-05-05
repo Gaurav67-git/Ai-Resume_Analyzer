@@ -58,6 +58,9 @@ loadResume();
 <img src="/icons/back.svg" alt="logo" className= "w-2.5 h-2.5" />
                     <span className= "text-gray-800 text-sm font-semibold">Back to Homepage</span>
                 </Link>
+                <Link to={`/jobs/${id}`} className="primary-button w-fit">
+                    Job Recommendations
+                </Link>
             </nav>
 <div className = "flex flex-row w-full max-lg:flex-col-reverse">
 <section className= "feedback-section bg-[url('/images/bg-small.svg') bg-cover h-[100vh] sticky top-0 items-center justify-center">
@@ -78,6 +81,19 @@ loadResume();
        {feedback ?(
            <div className="flex flex-col gap-8 animate-in fade-in duration-1000">
 <Summary feedback = {feedback} />
+               {feedback.overallScore < 70 && (
+                   <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col gap-4">
+                       <div>
+                           <h2 className="!text-2xl !text-black font-bold">Resume needs improvement</h2>
+                           <p className="text-gray-600 mt-2">
+                               AI can create a stronger draft aligned with this job role and the missing ATS keywords.
+                           </p>
+                       </div>
+                       <Link to={`/optimized-resume/${id}`} className="primary-button w-fit">
+                           Make New Job-Aligned Resume
+                       </Link>
+                   </div>
+               )}
                <ATS score = {feedback.ATS.score || 0} suggestions = {feedback.ATS.tips || []} />
                <Details feedback = {feedback}  />
            </div>

@@ -1,10 +1,11 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import FileUploader from "~/components/FileUploader";
 import { usePuterStore } from "~/lib/puter";
 import { useNavigate } from "react-router";
 import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "../../constants";
+import Navbar from "~/components/Navbar";
 
 const Upload = () => {
     const { auth, isLoading, fs, ai, kv } = usePuterStore();
@@ -14,6 +15,12 @@ const Upload = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [statusText, setStatusText] = useState("");
     const [file, setFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        if (!isLoading && !auth.isAuthenticated) {
+            navigate("/auth?next=/upload");
+        }
+    }, [auth.isAuthenticated, isLoading, navigate]);
 
     const handleFileSelect = (file: File | null) => {
         setFile(file);
@@ -133,6 +140,7 @@ const Upload = () => {
 
     return (
         <main className="min-h-screen bg-[url('/images/bg-main.svg')] bg-cover">
+            <Navbar />
             <section className="w-full px-6 py-16">
                 <div className="page-heading py-16">
                     <h1>Smart feedback for your dream job</h1>
