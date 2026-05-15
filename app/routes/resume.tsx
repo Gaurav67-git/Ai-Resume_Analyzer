@@ -4,6 +4,7 @@ import {usePuterStore} from "~/lib/puter";
 import Summary from "~/components/Summary";
 import ATS from "~/components/ATS";
 import Details from "~/components/Details";
+import VideoTutorials from "~/components/VideoTutorials";
 
 export const meta = () =>([
     { title: 'Resumind | Review '},
@@ -94,6 +95,7 @@ loadResume();
                        </Link>
                    </div>
                )}
+               <VideoTutorials feedback={feedback} />
                <ATS score = {feedback.ATS.score || 0} suggestions = {feedback.ATS.tips || []} />
                <Details feedback = {feedback}  />
            </div>
